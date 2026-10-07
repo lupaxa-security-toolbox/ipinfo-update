@@ -29,24 +29,22 @@ Requires Python 3.10 or newer. You can also run
 ```bash
 export IPINFO_TOKEN=your-token
 ipinfo-update
-ipinfo-update --token your-token --output /var/lib/ipinfo/ipinfo_lite.mmdb
-ipinfo-update --quiet
+ipinfo-update --token your-token --quiet
 ```
 
-The default path is `ipinfo_lite.mmdb` in the working directory.
+The default path is `/var/lib/ipinfo/ipinfo_lite.mmdb`.
 `IPINFO_DATABASE` replaces that default. `--output` replaces both.
-
-The finished file is mode `0644`.
+If the directory does not exist, it is created. The finished file is mode `0644`.
 
 ### Flags
 
-| Flag        | Default            | Description                                             |
-| :---------- | :----------------- | :------------------------------------------------------ |
-| `--token`   | `IPINFO_TOKEN`     | IPinfo access token (`-t`)                              |
-| `--output`  | `ipinfo_lite.mmdb` | Database path (`-o`). `IPINFO_DATABASE` is the fallback |
-| `--timeout` | `60`               | HTTP timeout in seconds                                 |
-| `--quiet`   | off                | Print nothing on success (`-q`)                         |
-| `--version` | —                  | Print the package version and exit                      |
+| Flag        | Default                                | Description                                              |
+| :---------- | :------------------------------------- | :------------------------------------------------------- |
+| `--token`   | `IPINFO_TOKEN`                         | IPinfo access token (`-t`)                               |
+| `--output`  | `/var/lib/ipinfo/ipinfo_lite.mmdb`     | Database path (`-o`). `IPINFO_DATABASE` is the fallback  |
+| `--timeout` | `60`                                   | HTTP timeout in seconds                                  |
+| `--quiet`   | off                                    | Print nothing on success (`-q`)                          |
+| `--version` | —                                      | Print the package version and exit                       |
 
 `--token` and `--output` are optional. When `--output` is omitted,
 `IPINFO_DATABASE` is used if that variable is set.
@@ -62,7 +60,7 @@ The finished file is mode `0644`.
 ## Cron
 
 ```cron
-15 3 * * * IPINFO_TOKEN=your-token ipinfo-update --output /var/lib/ipinfo/ipinfo_lite.mmdb --quiet
+15 3 * * * IPINFO_TOKEN=your-token ipinfo-update --quiet
 ```
 
 `--quiet` prints nothing when the update succeeds. Failures still go to

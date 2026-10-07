@@ -10,7 +10,6 @@ import pytest
 import requests
 
 from lupaxa.ipinfo_update.update import (
-    DEFAULT_DATABASE,
     UpdateError,
     resolve_database,
     resolve_token,
@@ -54,9 +53,9 @@ def test_resolve_token_env_and_flag(monkeypatch: pytest.MonkeyPatch) -> None:
 
 
 def test_resolve_database_default(monkeypatch: pytest.MonkeyPatch) -> None:
-    """With no flag and no env var, the path is the working-directory default."""
+    """With no flag and no env var, the path is the shared IPinfo Lite file."""
     monkeypatch.delenv("IPINFO_DATABASE", raising=False)
-    assert resolve_database(None) == DEFAULT_DATABASE
+    assert resolve_database(None) == Path("/var/lib/ipinfo/ipinfo_lite.mmdb")
 
 
 def test_resolve_database_env_and_flag(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
@@ -124,6 +123,21 @@ def test_update_database_rejects_empty_body(
     assert destination.read_bytes() == b"keep-me"
     leftovers = [path for path in tmp_path.iterdir() if path != destination]
     assert leftovers == []
+
+
+def test_update_database_creates_missing_parent(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    """A missing destination directory is created before the file is written."""
+    destination = tmp_path / "ipinfo" / "ipinfo_lite.mmdb"
+    monkeypatch.setattr(
+        "lupaxa.ipinfo_update.update.requests.get",
+        lambda url, **kwargs: _Body(b"mmdb-bytes"),
+    )
+    update_database(destination, "test-token")
+    assert destination.is_file()
+    assert destination.read_bytes() == b"mmdb-bytes"
 
 
 def test_update_database_requires_token(tmp_path: Path) -> None:

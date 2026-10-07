@@ -9,7 +9,7 @@ from pathlib import Path
 import requests
 
 DOWNLOAD_URL = "https://ipinfo.io/data/ipinfo_lite.mmdb"
-DEFAULT_DATABASE = Path("ipinfo_lite.mmdb")
+DEFAULT_DATABASE = Path("/var/lib/ipinfo/ipinfo_lite.mmdb")
 DEFAULT_TIMEOUT = 60.0
 DATABASE_MODE = 0o644
 
@@ -33,7 +33,7 @@ def resolve_database(output: Path | None) -> Path:
     """Return the database path for this run.
 
     ``output`` wins. Otherwise ``IPINFO_DATABASE`` is used when it is
-    set. The fallback is ``ipinfo_lite.mmdb`` in the working directory.
+    set. The fallback is ``/var/lib/ipinfo/ipinfo_lite.mmdb``.
     """
     if output is not None:
         return output

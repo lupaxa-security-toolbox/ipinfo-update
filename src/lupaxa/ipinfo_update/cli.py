@@ -46,7 +46,7 @@ def build_parser() -> argparse.ArgumentParser:
         type=Path,
         default=None,
         metavar="PATH",
-        help="Database path (default: ipinfo_lite.mmdb, or IPINFO_DATABASE)",
+        help="Database path (default: /var/lib/ipinfo/ipinfo_lite.mmdb, or IPINFO_DATABASE)",
     )
     parser.add_argument(
         "--timeout",
