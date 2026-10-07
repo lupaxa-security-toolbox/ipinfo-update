@@ -5,6 +5,9 @@ name: Generate Release
 #   X.Y.Z-rcN     → generate-test-release.yml (prerelease)
 #   X.Y.Z-devN    → no release workflow
 #   X.Y.Z-draftN  → generate-draft-release.yml (GitHub draft; not from Make)
+#
+# PyPI Trusted Publishing must run in this workflow file (not a reusable
+# workflow). See https://docs.pypi.org/trusted-publishers/troubleshooting/
 
 on:
   push:
@@ -13,6 +16,7 @@ on:
       - '!v[0-9]+.[0-9]+.[0-9]+-dev[0-9]+'
       - '!v[0-9]+.[0-9]+.[0-9]+-draft[0-9]+'
       - '!v[0-9]+.[0-9]+.[0-9]+-rc[0-9]+'
+  workflow_dispatch:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -21,8 +25,37 @@ concurrency:
 permissions:
   actions: read
   contents: write
+  id-token: write
 
 jobs:
+  build-and-publish:
+    name: Build and upload to PyPI
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+
+      - name: Set Up Python
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
+        with:
+          python-version: "3.13"
+
+      - name: Install Build Backend
+        run: |
+          python -m pip install --upgrade pip
+          pip install hatch
+
+      - name: Build Distribution
+        run: |
+          hatch build
+
+      # Trusted publishing (OIDC). This repo must be a Trusted Publisher on PyPI.
+      - name: Publish to PyPI via Trusted Publisher
+        uses: pypa/gh-action-pypi-publish@dc37677b2e1c63e2034f94d8a5b11f265b73ba33  # v1.14.2
+        with:
+          verbose: true
+
   generate-release-notes:
     name: Generate Release Notes
     uses: the-lupaxa-project/workflows/.github/workflows/reusable-github-release-generator.yml@master
@@ -35,6 +68,7 @@ jobs:
   generate-workflow-summary:
     name: Generate Workflow Summary
     needs:
+      - build-and-publish
       - generate-release-notes
     if: always()
     uses: the-lupaxa-project/workflows/.github/workflows/reusable-workflow-summary.yml@master
